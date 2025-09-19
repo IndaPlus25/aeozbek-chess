@@ -1,34 +1,39 @@
-
-fn main() {
-   
-}
-
 struct Piece {
 
         position: String,
         color: String,
         what_type: String,
+        has_moved: Option<bool>
 
     }
 
 impl Piece {
 
-    fn new(position: &str, color: &str, what_type: &str) -> Self {
+    fn new(position: &str, color: &str, what_type: &str, has_moved: Option<bool>) -> Self {
 
-        Piece { position: position.to_string(), color: color.to_string(), what_type: what_type.to_string()}
+        Piece { position: position.to_string(), color: color.to_string(), what_type: what_type.to_string(), has_moved: has_moved}
     }
+}
+
+enum GameState {
+
+    InProgress,
+    Check,
+    GameOver,
+    Checkmate,
+    DeadPosition,
 }
 
 struct Game {
 
-    gameboard: Vec<Vec<Piece>>,
-        
+    gameboard: [[Option<Piece>; 8]; 8],
+    current_state: GameState
 }
 
 
 pub fn new() -> Game {
 
-    let mut chessboard: Vec<Vec<Piece>> = (0..8).map(|_| Vec::new()).collect();
+    let mut chessboard: [[Option<Piece>; 8]; 8] = [[None; 8]; 8];
 
     for row in 0..8 {
 
@@ -142,15 +147,15 @@ pub fn new() -> Game {
         }
     }
 
-    let gameboard: Game = Game { gameboard: chessboard };
+    let new_gameboard: Game = Game { gameboard: chessboard, current_state: GameState::InProgress };
 
-    gameboard
+    new_gameboard
 }
 
 fn position_converter(x: usize, y: i32) -> String {
 
-    let row: char = char::from_u32(x as u32 - 97).unwrap();
-    let column: char = char::from_u32(y as u32 - 97).unwrap();
+    let row: char = char::from_u32(x as u32 + 97).unwrap();
+    let column: char = char::from_u32(y as u32 + 97).unwrap();
 
 
     let position: String = [row, column].iter().collect();
