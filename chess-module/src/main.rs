@@ -1,4 +1,5 @@
-struct Piece {
+struct Piece 
+{
 
         position: String,
         color: String,
@@ -7,7 +8,8 @@ struct Piece {
 
     }
 
-impl Piece {
+impl Piece 
+{
 
     fn new(position: &str, color: &str, what_type: &str, has_moved: Option<bool>) -> Self {
 
@@ -15,7 +17,8 @@ impl Piece {
     }
 }
 
-enum GameState {
+enum GameState 
+{
 
     InProgress,
     Check,
@@ -24,10 +27,116 @@ enum GameState {
     DeadPosition,
 }
 
-struct Game {
+struct Game 
+{
 
     gameboard: [[Option<Piece>; 8]; 8],
     current_state: GameState
+}
+
+impl Game 
+{
+    pub fn get_possible_moves(&self, position: String) -> Option<Vec<String>>
+    {
+        let possible_moves: vec = Vec::new();
+        let (row, column): (u8, u8) = reverse_position_converter(position);
+        let which_piece: Option<Piece> = &self.gameboard[row][column];
+
+        if let Some(chosen_piece) = which_piece
+        {
+            if chosen_piece.what_type == "Pawn" 
+            {
+
+                if chosen_piece.color == "Black" && row < 7
+                {
+
+                    let piece_at_front: Option<Piece> = Some(&self.gameboard[row + 1][column]);
+
+                    match piece_at_front
+                    {
+                        Some(_) => (),
+                        None => possible_moves.push(position_converter(row, column))
+                    }
+
+                    if column < 7
+                    {
+                        let piece_on_right: Option<Piece> = Some(&self.gameboard[row + 1][column + 1]);
+
+                        match piece_on_right 
+                        {
+                            Some(piece) => {if piece.color == "White" {
+
+                                possible_moves.push(position_converter(row + 1, column + 1));
+                            }},
+                            None => ()
+                        }
+                    }
+                    
+                    if column > 0
+                    {
+                        let piece_on_left: Option<Piece> = (&self.gameboard[row + 1][column - 1]);
+
+                        match piece_on_left
+                        {
+                            Some(piece) => {if piece.color == "White" {
+
+                                possible_moves-push(position_converter(row + 1, column - 1));
+                            }},
+                            None => ()
+                        }
+                    }
+                }
+
+                else if (chosen_piece.color == "White" && row > 0)
+                {
+
+                    let piece_at_front: Option<Piece> = Some(&self.gameboard[row - 1][column]);
+
+                    match piece_at_front
+                    {
+                        Some(_) => (),
+                        None => possible_moves.push(position_converter(row - 1, column))
+                    }
+
+                    if column > 0
+                    {
+                        let piece_on_right: Option<Piece> = Some(&self.gameboard[row - 1][column + 1]);
+
+                        match piece_on_right 
+                        {
+                            Some(piece) => {if piece.color == "White" {
+
+                                possible_moves-push(position_converter(row - 1, column + 1));
+                            }},
+                            None => ()
+                        }
+                    }
+                    
+                    if column > 0
+                    {
+                        let piece_on_left: Option<Piece> = (&self.gameboard[row - 1][column - 1]);
+
+                        match piece_on_left
+                        {
+                            Some(piece) => {if piece.color == "White" {
+
+                                possible_moves-push(position_converter(row - 1, column - 1));
+                            }},
+                            None => ()
+                        }
+                    }
+
+                }
+
+            }
+
+            else if chosen_piece.what_type == "Knight"
+            {
+                
+            }
+        }
+
+    }
 }
 
 
@@ -92,7 +201,7 @@ pub fn new() -> Game {
 fn position_converter(x: u8, y: u8) -> String 
 {
 
-    let row: char = char::from_u32(x as u32 + 65).unwrap();
+    let row: char = char::from_u32(x as u32 + 65).unwrap(); // 65 is A's ASCII chart number, in Rust chars can also be modified as if they are numbers and there is a special chart (ASCII chart) for that
     let column: char = char::from_u32(y as u32 + 65).unwrap();
 
     let position: String = [row, column].iter().collect();
@@ -103,7 +212,7 @@ fn position_converter(x: u8, y: u8) -> String
 fn reverse_position_converter(position: String) -> [u8; 2]
 {   
 
-    let column = position[0]..as_bytes()[0] - 65;
+    let column = position[0]..as_bytes()[0] - 65; 
     let row: u8 = position[1].parse().unwrap();
 
     let coordinates: [u8; 2] = [row, column];
