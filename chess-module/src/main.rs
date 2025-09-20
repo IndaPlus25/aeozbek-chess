@@ -1,17 +1,17 @@
 struct Piece 
 {
-
         position: String,
         color: String,
         what_type: String,
         has_moved: Option<bool>
 
-    }
+}
 
 impl Piece 
 {
 
-    fn new(position: &str, color: &str, what_type: &str, has_moved: Option<bool>) -> Self {
+    fn new(position: &str, color: &str, what_type: &str, has_moved: Option<bool>) -> Self 
+    {
 
         Piece { position: position.to_string(), color: color.to_string(), what_type: what_type.to_string(), has_moved: has_moved}
     }
@@ -19,7 +19,6 @@ impl Piece
 
 enum GameState 
 {
-
     InProgress,
     Check,
     GameOver,
@@ -29,7 +28,6 @@ enum GameState
 
 struct Game 
 {
-
     gameboard: [[Option<Piece>; 8]; 8],
     current_state: GameState
 }
@@ -40,7 +38,7 @@ impl Game
     {
         let possible_moves: vec = Vec::new();
         let (row, column): (u8, u8) = reverse_position_converter(position);
-        let which_piece: Option<Piece> = &self.gameboard[row][column];
+        let which_piece: &Option<Piece> = &self.gameboard[row][column];
 
         if let Some(chosen_piece) = which_piece
         {
@@ -50,7 +48,7 @@ impl Game
                 if chosen_piece.color == "Black" && row < 7
                 {
 
-                    let piece_at_front: Option<Piece> = Some(&self.gameboard[row + 1][column]);
+                    let piece_at_front: &Option<Piece> = &self.gameboard[row + 1][column];
 
                     match piece_at_front
                     {
@@ -60,7 +58,7 @@ impl Game
 
                     if column < 7
                     {
-                        let piece_on_right: Option<Piece> = Some(&self.gameboard[row + 1][column + 1]);
+                        let piece_on_right: &Option<Piece> = &self.gameboard[row + 1][column + 1];
 
                         match piece_on_right 
                         {
@@ -74,7 +72,7 @@ impl Game
                     
                     if column > 0
                     {
-                        let piece_on_left: Option<Piece> = (&self.gameboard[row + 1][column - 1]);
+                        let piece_on_left: &Option<Piece> = &self.gameboard[row + 1][column - 1];
 
                         match piece_on_left
                         {
@@ -90,7 +88,7 @@ impl Game
                 else if (chosen_piece.color == "White" && row > 0)
                 {
 
-                    let piece_at_front: Option<Piece> = Some(&self.gameboard[row - 1][column]);
+                    let piece_at_front: &Option<Piece> = &self.gameboard[row - 1][column];
 
                     match piece_at_front
                     {
@@ -100,7 +98,7 @@ impl Game
 
                     if column > 0
                     {
-                        let piece_on_right: Option<Piece> = Some(&self.gameboard[row - 1][column + 1]);
+                        let piece_on_right: &Option<Piece> = &self.gameboard[row - 1][column + 1];
 
                         match piece_on_right 
                         {
@@ -114,7 +112,7 @@ impl Game
                     
                     if column > 0
                     {
-                        let piece_on_left: Option<Piece> = (&self.gameboard[row - 1][column - 1]);
+                        let piece_on_left: &Option<Piece> = &self.gameboard[row - 1][column - 1];
 
                         match piece_on_left
                         {
@@ -132,13 +130,407 @@ impl Game
 
             else if chosen_piece.what_type == "Knight"
             {
+                if column > 0 
+                {
+                    
+                    if row >= 2 
+                    {
+
+                        let targeted_piece_one: &Option<Piece> = &self.gameboard[row - 2][column - 1];
+
+                        match targeted_piece_one
+                        {
+
+                            Some(piece ) => {if piece.color != chosen_piece.color
+                            {
+                                possible_moves.push(position_converter(row - 2, column - 1));
+                            }}
+
+                            None => possible_moves.push(position_converter(row - 2, column - 1))
+                        }
+                    }
+
+                    if row <= 5
+                    {
+
+                        let targeted_piece_two: &Option<Piece> = &self.gameboard[row + 2][column - 1];
+
+                        match targeted_piece_two
+                        {
+
+                            Some(piece ) => {if piece.color != chosen_piece.color
+                            {
+                                possible_moves.push(position_converter(row + 2, column - 1));
+                            }}
+
+                            None => possible_moves.push(position_converter(row + 2, column - 1))
+                        }
+
+                    }
+
+                }
+
                 
+                if column < 7
+                {
+                    
+                    if row >= 2 
+                    {
+
+                        let targeted_piece_three: &Option<Piece> = &self.gameboard[row - 2][column + 1];
+
+                        match targeted_piece_three
+                        {
+
+                            Some(piece ) => {if piece.color != chosen_piece.color
+                            {
+                                possible_moves.push(position_converter(row - 2, column + 1));
+                            }}
+
+                            None => possible_moves.push(position_converter(row - 2, column + 1))
+                        }
+
+                    }
+
+                    if row <= 5
+                    {
+
+                        let targeted_piece_four: &Option<Piece> = &self.gameboard[row + 2][column + 1];
+
+                        match targeted_piece_four
+                        {
+
+                            Some(piece ) => {if piece.color != chosen_piece.color
+                            {
+                                possible_moves.push(position_converter(row + 2, column + 1));
+                            }}
+
+                            None => possible_moves.push(position_converter(row + 2, column + 1))
+                        }
+
+                    }
+
+                }
+
+                if column <= 5
+                {
+                    if row > 1
+                    {
+
+                        let targeted_piece_five: &Option<Piece> = &self.gameboard[row - 1][column + 2];
+
+                        match targeted_piece_five
+                        {
+
+                            Some(piece ) => {if piece.color != chosen_piece.color
+                            {
+                                possible_moves.push(position_converter(row - 1, column + 2));
+                            }}
+
+                            None => possible_moves.push(position_converter(row - 1, column + 2))
+                        }
+
+                    }
+
+                    if row < 6
+                    {
+
+                        let targeted_piece_six: &Option<Piece> = &self.gameboard[row + 1][column + 2];
+
+                        match targeted_piece_six
+                        {
+
+                            Some(piece ) => {if piece.color != chosen_piece.color
+                            {
+                                possible_moves.push(position_converter(row - 1, column + 2));
+                            }}
+
+                            None => possible_moves.push(position_converter(row - 1, column + 2))
+                        }
+
+                    }
+                }
+
+                if column >= 2
+                {
+                    if row > 1
+                    {
+
+                        let targeted_piece_seven: &Option<Piece> = &self.gameboard[row - 1][column - 2];
+
+                        match targeted_piece_seven
+                        {
+
+                            Some(piece ) => {if piece.color != chosen_piece.color
+                            {
+                                possible_moves.push(position_converter(row - 1, column - 2));
+                            }}
+
+                            None => possible_moves.push(position_converter(row - 1, column - 2))
+                        }
+
+                    }
+
+                    if row < 6
+                    {
+
+                        let targeted_piece_eight: &Option<Piece> = &self.gameboard[row + 1][column - 2];
+
+                        match targeted_piece_eight
+                        {
+
+                            Some(piece ) => {if piece.color != chosen_piece.color
+                            {
+                                possible_moves.push(position_converter(row + 1, column - 2));
+                            }}
+
+                            None => possible_moves.push(position_converter(row + 1, column - 2))
+                        }
+
+                    }
+                }
+                }
             }
+
+            else if chosen_piece.what_type == "Bishop" || chosen_piece.what_type == "Rook" || chosen_piece.what_type == "Queen"
+            {
+
+                if chosen_piece.what_type == "Bishop" || chosen_piece.what_type == "Queen"
+                {
+                    let mut is_right_up_done = false;
+                    let mut is_left_up_done = false;
+                    let mut is_left_down_done = false;
+                    let mut is_right_down_done = false;
+
+                    for i in 1..8
+                    {
+                        
+                        if row + i <= 7 && column + i <= 7 && !is_right_up_done
+                        {
+                            let current_targeted_piece: &Option<Piece> = &self.gameboard[row + i][column + i];
+
+                            match current_targeted_piece
+                            {
+                                Some(piece) => {if piece.color != chosen_piece.color
+                                { possible_moves.push(position_converter(row + i, column + i))}
+
+                                else 
+                                {
+                                    possible_moves.push(position_converter(row + i -1, column + i - 1));
+                                    
+                                }
+
+                                is_right_up_done = true; //when there is a piece on the way of bishop it cannot go further. If we do not have this boolean variable the loop might continue to go into this if-block although bishop cannot jumpon pieces.
+                            }
+
+                                None => possible_moves.push(position_converter(row + i, column + i))
+                            }
+                        }
+
+                        if row - i >= 0 && column - i >= 0 && !is_left_down_done
+                        {
+                            let current_targeted_piece: &Option<Piece> = &self.gameboard[row - i][column - i];
+
+                            match current_targeted_piece
+                            {
+                                Some(piece) => {if piece.color != chosen_piece.color
+                                { possible_moves.push(position_converter(row - i, column - i))}
+
+                                else 
+                                {
+                                    possible_moves.push(position_converter(row - i + 1, column - i + 1));
+                                }
+
+                                is_left_down_done = true;
+                            }
+
+                                None => possible_moves.push(position_converter(row - i, column - i))
+                            }
+                        }
+
+                        if row - i >= 0 && column + i <= 7 && !is_left_up_done
+                        {
+                            let current_targeted_piece: &Option<Piece> = &self.gameboard[row - i][column + i];
+
+                            match current_targeted_piece
+                            {
+                                Some(piece) => {if piece.color != chosen_piece.color
+                                { possible_moves.push(position_converter(row - i, column + i))}
+
+                                else 
+                                {
+                                    possible_moves.push(position_converter(row - i + 1, column - i - 1));
+                                }
+
+                                is_left_up_done = true;
+                            }
+
+                                None => possible_moves.push(position_converter(row - i, column + i))
+                                
+                            }
+                        }
+
+                        if row + i <= 7 && column - i >= 0 && !is_right_down_done
+                        {
+                            let current_targeted_piece: &Option<Piece> = &self.gamebıard[row + i][column - i];
+
+                            match current_targeted_piece
+                            {
+                                Some(piece) => {if piece.color != chosen_piece.color
+                                { possible_moves.push(position_converter(row + i, column - i))}
+
+                                else 
+                                {
+                                    possible_moves.push(position_converter(row + i - 1, column + i + 1));
+                                }
+
+                                is_right_down_done = true;
+                            }
+
+                                None => possible_moves.push(position_converter(row + i, column - i))
+                            }
+                    }
+
+                    if chosen_piece.what_type == "Rook" || chosen_piece.what_type == "Queen"
+                    {
+                        let mut is_right_done: bool = false;
+                        let mut is_left_done: bool = false;
+                        let mut is_up_done: bool = false;
+                        let mut is_down_done: bool = false;
+                        for i in 1..8
+                        {
+                            if column + i <= 7 && !is_right_done
+                            {    
+                                let current_targeted_piece: &Option<Piece> = &self.gameboard[row][column + i];
+
+                                match current_targeted_piece
+                                {
+                                    Some(piece) => { if piece.color != chosen_piece.color
+                                        {
+                                            possible_moves.push(position_converter(row, column + i));
+                                        }
+
+                                        else {
+                                            possible_moves.push(position_converter(row, column + i - 1));
+                                        }
+
+                                        is_right_done = true;
+                                    }
+
+                                    None => possible_moves.push(position_converter(row, column + i))
+                                }
+                            } 
+
+                            if column - i >= 0 && !is_left_done
+                            {
+                                let current_targeted_piece: &Option<Piece> = &self.gameboard[row][column - i];
+
+                                match current_targeted_piece
+                                {
+                                    Some(piece) => { if piece.color != chosen_piece.color
+                                        {
+                                            possible_moves.push(position_converter(row, column - i));
+                                        }
+
+                                        else {
+                                            possible_moves.push(position_converter(row, column - i + 1));
+                                        }
+
+                                        is_left_done = true;
+                                    }
+
+                                    None => possible_moves.push(position_converter(row, column - i))
+                                }
+
+
+                                if row + i <= 7 && !is_down_done
+                                {
+                                let current_targeted_piece: &Option<Piece> = &self.gameboard[row + i][column];
+
+                                match current_targeted_piece
+                                {
+                                    Some(piece) => { if piece.color != chosen_piece.color
+                                        {
+                                            possible_moves.push(position_converter(row + i, column));
+                                        }
+
+                                        else {
+                                            possible_moves.push(position_converter(row + i - 1, column));
+                                        }
+
+                                        is_down_done = true;
+                                    }
+
+                                    None => possible_moves.push(position_converter(row + i, column))
+                                }
+
+
+                                } 
+
+                                if row - i >= 0 && !is_up_done
+                            {
+                                let current_targeted_piece: &Option<Piece> = &self.gameboard[row - i][column];
+
+                                match current_targeted_piece
+                                {
+                                    Some(piece) => { if piece.color != chosen_piece.color
+                                        {
+                                            possible_moves.push(position_converter(row - i, column));
+                                        }
+
+                                        else {
+                                            possible_moves.push(position_converter(row - i + 1, column));
+                                        }
+
+                                        is_left_done = true;
+                                    }
+
+                                    None => possible_moves.push(position_converter(row - i, column))
+                                }
+                                
+                            }
+                            }
+
+                                }
+                            }
+                            }
+
+            }
+
+            else if chosen_piece.what_type == "King"
+            {
+                let maximal_range_of_king: Vec<String> = Vec::new();
+                let maximal_range_of_opposite_king: Vec<String> = Vec::new();
+                if row > 0
+                {   
+                    if column > 0
+                    {
+                        let current_targeted_piece: &Option<Piece> = &self.gameboard[row - 1][column - 1];
+                        
+                        match current_targeted_piece
+                        {
+
+                            Some(piece) => {if piece.color != chosen_piece.color {
+                                maximal_range_of_king.push(position_converter(row - 1, column -1));
+                            }}
+
+                            None => maximal_range_of_king.push(position_converter(row - 1, column -1))
+                        }   
+                        
+                    }
+
+                    if column < 7
+                    {
+
+                    }
+                }
+            }
+            
         }
 
     }
-}
 
+}
 
 pub fn new() -> Game {
 
@@ -218,3 +610,4 @@ fn reverse_position_converter(position: String) -> [u8; 2]
     let coordinates: [u8; 2] = [row, column];
     coordinates
 }
+
