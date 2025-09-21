@@ -1,3 +1,5 @@
+use std::iter;
+
 struct Piece 
 {
         position: String,
@@ -9,7 +11,6 @@ struct Piece
 
 impl Piece 
 {
-
     fn new(position: &str, color: &str, what_type: &str, has_moved: Option<bool>) -> Self 
     {
 
@@ -34,6 +35,7 @@ struct Game
 
 impl Game 
 {
+    
     pub fn get_possible_moves(&self, position: String) -> Option<Vec<String>>
     {
         let possible_moves: vec = Vec::new();
@@ -499,10 +501,44 @@ impl Game
 
             else if chosen_piece.what_type == "King"
             {
-                let maximal_range_of_king: Vec<String> = Vec::new();
-                let maximal_range_of_opposite_king: Vec<String> = Vec::new();
+                let mut maximal_range_of_king: Vec<String> = Vec::new();
+                let mut new_gameboard_to_be_scanned = &self.gameboard;
+
+                if !chosen_piece.has_moved
+                {
+                    let rook1: Option<Piece> = &self.gameboard[row][column + 3];
+                    let rook2: Option<Piece> = &self.gameboard[row][column + 4];
+
+
+                    if chosen_piece.color == "White"
+                    {
+                    
+                        match rook1
+                        {
+                            Some(piece) => {if piece.what_type == "Rook" {
+                                if !piece.has_moved
+                                {
+                                    maximal_range_of_king.push()
+                                }
+                            }}
+                        }
+                    }
+                }
+
                 if row > 0
                 {   
+                    let current_targeted_piece: &Option<Piece> = &self.gameboard[row - 1][column];
+                        
+                    match current_targeted_piece
+                    {
+
+                        Some(piece) => {if piece.color != chosen_piece.color {
+                            maximal_range_of_king.push(position_converter(row - 1, column));
+                            new_gameboard_to_be_scanned[row - 1][column].color = chosen_piece.color;
+                        }}
+
+                        None => maximal_range_of_king.push(position_converter(row - 1, column -1))
+                    } 
                     if column > 0
                     {
                         let current_targeted_piece: &Option<Piece> = &self.gameboard[row - 1][column - 1];
@@ -512,6 +548,7 @@ impl Game
 
                             Some(piece) => {if piece.color != chosen_piece.color {
                                 maximal_range_of_king.push(position_converter(row - 1, column -1));
+                                new_gameboard_to_be_scanned[row - 1][column - 1].color = chosen_piece.color;
                             }}
 
                             None => maximal_range_of_king.push(position_converter(row - 1, column -1))
@@ -521,16 +558,153 @@ impl Game
 
                     if column < 7
                     {
+                        let current_targeted_piece: &Option<Piece> = &self.gameboard[row - 1][column + 1];
+                        
+                        match current_targeted_piece
+                        {
 
+                            Some(piece) => {if piece.color != chosen_piece.color {
+                                maximal_range_of_king.push(position_converter(row - 1, column + 1));
+                                new_gameboard_to_be_scanned[row - 1][column + 1].color = chosen_piece.color;
+                            }}
+
+                            None => maximal_range_of_king.push(position_converter(row - 1, column + 1))
+                        } 
+                    }
+
+                }
+
+                if row < 7
+                {   
+                    let current_targeted_piece: &Option<Piece> = &self.gameboard[row + 1][column];
+                        
+                    match current_targeted_piece
+                    {
+
+                        Some(piece) => {if piece.color != chosen_piece.color {
+                            maximal_range_of_king.push(position_converter(row + 1, column));
+                            new_gameboard_to_be_scanned[row - 1][column].color = chosen_piece.color;
+                        }}
+
+                        None => maximal_range_of_king.push(position_converter(row + 1, column -1))
+                    } 
+                    if column > 0
+                    {
+                        let current_targeted_piece: &Option<Piece> = &self.gameboard[row + 1][column - 1];
+                        
+                        match current_targeted_piece
+                        {
+
+                            Some(piece) => {if piece.color != chosen_piece.color {
+                                maximal_range_of_king.push(position_converter(row + 1, column - 1));
+                                new_gameboard_to_be_scanned[row - 1][column - 1].color = chosen_piece.color;
+                            }}
+
+                            None => maximal_range_of_king.push(position_converter(row + 1, column - 1))
+                        }   
+                        
+                    }
+
+                    if column < 7
+                    {
+                        let current_targeted_piece: &Option<Piece> = &self.gameboard[row + 1][column + 1];
+                        
+                        match current_targeted_piece
+                        {
+
+                            Some(piece) => {if piece.color != chosen_piece.color {
+                                maximal_range_of_king.push(position_converter(row + 1, column + 1));
+                                new_gameboard_to_be_scanned[row - 1][column + 1].color = chosen_piece.color;
+                            }}
+
+                            None => maximal_range_of_king.push(position_converter(row + 1, column + 1))
+                        } 
+                    }
+
+                }
+
+                if column > 0
+                    {
+                        let current_targeted_piece: &Option<Piece> = &self.gameboard[row][column - 1];
+                        
+                        match current_targeted_piece
+                        {
+
+                            Some(piece) => {if piece.color != chosen_piece.color {
+                                maximal_range_of_king.push(position_converter(row, column - 1));
+                                new_gameboard_to_be_scanned[row][column - 1].color = chosen_piece.color;
+                            }}
+
+                            None => maximal_range_of_king.push(position_converter(row, column - 1))
+                        }   
+                        
+                    }
+                
+                if column < 7
+                    {
+                        let current_targeted_piece: &Option<Piece> = &self.gameboard[row][column + 1];
+                        
+                        match current_targeted_piece
+                        {
+
+                            Some(piece) => {if piece.color != chosen_piece.color {
+                                maximal_range_of_king.push(position_converter(row, column + 1));
+                                new_gameboard_to_be_scanned[row][column + 1].color = &chosen_piece.color;
+                            }}
+
+                            None => maximal_range_of_king.push(position_converter(row, column + 1))
+                        }   
+                        
+                    }
+
+                }
+
+                let maximal_range_of_opposite_king = get_opposite_kings_range(&self, find_opposite_king(&self, &chosen_piece));
+
+                for moves in maximal_range_of_opposite_king
+                {
+                    if maximal_range_of_king.contains(moves)
+                    {
+                        if let Some(index) = maximal_range_of_king.iter().position(|&x| x == moves) {
+                            maximal_range_of_king.remove(index);
+                        }
                     }
                 }
-            }
-            
+
+
+                for every_row in new_gameboard_to_be_scanned
+                {
+                    for every_column in every_row
+                    {
+                        if maximal_range_of_king.contains(new_gameboard_to_be_scanned[every_row][every_column])
+                        {
+                            if let Some(index) = maximal_range_of_king.iter().position(|moves| moves == new_gameboard_to_be_scanned[every_row][every_column])
+                            {
+                                maximal_range_of_king.remove(index);
+                            }
+                        }
+                            
+                    }
+                    
+                }
+
+                for every_move in maximal_range_of_opposite_king
+                {
+                    possible_moves.push(every_move)
+                }
+                            
+            possible_moves
         }
 
-    }
+        else {
+            None
+        }
 
+            
+    }
 }
+
+
 
 pub fn new() -> Game {
 
@@ -611,3 +785,157 @@ fn reverse_position_converter(position: String) -> [u8; 2]
     coordinates
 }
 
+fn find_opposite_king(&current_game: Game, main_chosen_piece: Piece) -> Piece
+{
+    for rows in 0..8
+    {
+        for columns in 0..8{
+
+            let current_targeted_piece = &current_game.gameboard[rows][columns];
+            match current_targeted_piece
+            {
+                Some(piece) => {if current_targeted_piece.what_type == "King" && current_targeted_piece.color != main_chosen_piece.color {
+
+                    piece
+                    
+                }}
+
+                None => ()
+            }
+
+        }
+        
+    }
+}
+
+fn get_opposite_kings_range(&current_game: Game, opposite_king: Piece) -> Vec<String>
+{
+    let maximal_range_of_opposite_king: Vec<String> = Vec::new();
+    let (row, column): (u8, u8) = reverse_position_converter(Piece.position).iter().collect();
+
+    if row > 0
+    {   
+        let current_targeted_piece: &Option<Piece> = &current_game.gameboard[row - 1][column];
+            
+        match current_targeted_piece
+        {
+
+            Some(piece) => {if piece.color != chosen_piece.color {
+                maximal_range_of_opposite_king.push(position_converter(row - 1, column));
+            }}
+
+            None => maximal_range_of_opposite_king.push(position_converter(row - 1, column -1))
+        } 
+        if column > 0
+        {
+            let current_targeted_piece: &Option<Piece> = &current_game.gameboard[row - 1][column - 1];
+            
+            match current_targeted_piece
+            {
+
+                Some(piece) => {if piece.color != chosen_piece.color {
+                    maximal_range_of_opposite_king.push(position_converter(row - 1, column -1));
+                }}
+
+                None => maximal_range_of_opposite_king.push(position_converter(row - 1, column -1))
+            }   
+            
+        }
+
+        if column < 7
+        {
+            let current_targeted_piece: &Option<Piece> = &current_game.gameboard[row - 1][column + 1];
+            
+            match current_targeted_piece
+            {
+
+                Some(piece) => {if piece.color != chosen_piece.color {
+                    maximal_range_of_opposite_king.push(position_converter(row - 1, column -1));
+                }}
+
+                None => maximal_range_of_opposite_king.push(position_converter(row - 1, column + 1))
+            } 
+        }
+
+    }
+
+    if row < 7
+    {   
+        let current_targeted_piece: &Option<Piece> = &self.gameboard[row + 1][column];
+            
+        match current_targeted_piece
+        {
+
+            Some(piece) => {if piece.color != chosen_piece.color {
+                maximal_range_of_opposite_king.push(position_converter(row + 1, column));
+            }}
+
+            None => maximal_range_of_opposite_king.push(position_converter(row + 1, column -1))
+        } 
+        if column > 0
+        {
+            let current_targeted_piece: &Option<Piece> = &self.gameboard[row + 1][column - 1];
+            
+            match current_targeted_piece
+            {
+
+                Some(piece) => {if piece.color != chosen_piece.color {
+                    maximal_range_of_opposite_king.push(position_converter(row + 1, column - 1));
+                }}
+
+                None => maximal_range_of_opposite_king.push(position_converter(row + 1, column - 1))
+            }   
+            
+        }
+
+        if column < 7
+        {
+            let current_targeted_piece: &Option<Piece> = &self.gameboard[row + 1][column + 1];
+            
+            match current_targeted_piece
+            {
+
+                Some(piece) => {if piece.color != chosen_piece.color {
+                    maximal_range_of_opposite_king.push(position_converter(row + 1, column + 1));
+                }}
+
+                None => maximal_range_of_opposite_king.push(position_converter(row + 1, column + 1))
+            } 
+        }
+
+    }
+
+    if column > 0
+        {
+            let current_targeted_piece: &Option<Piece> = &self.gameboard[row][column - 1];
+            
+            match current_targeted_piece
+            {
+
+                Some(piece) => {if piece.color != chosen_piece.color {
+                    maximal_range_of_opposite_king.push(position_converter(row, column - 1));
+                    
+                }}
+
+                None => maximal_range_of_opposite_king.push(position_converter(row, column - 1))
+            }   
+            
+        }
+    
+    if column < 7
+        {
+            let current_targeted_piece: &Option<Piece> = &self.gameboard[row][column + 1];
+            
+            match current_targeted_piece
+            {
+
+                Some(piece) => {if piece.color != chosen_piece.color {
+                    maximal_range_of_opposite_king.push(position_converter(row, column + 1));
+                }}
+
+                None => maximal_range_of_opposite_king.push(position_converter(row, column + 1))
+            }   
+            
+        }
+    maximal_range_of_opposite_king
+}
