@@ -1,4 +1,4 @@
-use std::iter;
+use std::{f32::consts::E, iter};
 
 struct Piece 
 {
@@ -49,7 +49,7 @@ impl Game
 
                 if chosen_piece.color == "Black" && row < 7
                 {
-
+                    
                     let piece_at_front: &Option<Piece> = &self.gameboard[row + 1][column];
 
                     match piece_at_front
@@ -60,30 +60,12 @@ impl Game
 
                     if column < 7
                     {
-                        let piece_on_right: &Option<Piece> = &self.gameboard[row + 1][column + 1];
-
-                        match piece_on_right 
-                        {
-                            Some(piece) => {if piece.color == "White" {
-
-                                possible_moves.push(position_converter(row + 1, column + 1));
-                            }},
-                            None => ()
-                        }
+                        is_valid_move_en_passaint(&self, row + 1, column + 1, chosen_piece, possible_moves);
                     }
                     
                     if column > 0
                     {
-                        let piece_on_left: &Option<Piece> = &self.gameboard[row + 1][column - 1];
-
-                        match piece_on_left
-                        {
-                            Some(piece) => {if piece.color == "White" {
-
-                                possible_moves-push(position_converter(row + 1, column - 1));
-                            }},
-                            None => ()
-                        }
+                        is_valid_move_en_passaint(&self, row + 1, column -1, chosen_piece, possible_moves);
                     }
                 }
 
@@ -100,30 +82,12 @@ impl Game
 
                     if column > 0
                     {
-                        let piece_on_right: &Option<Piece> = &self.gameboard[row - 1][column + 1];
-
-                        match piece_on_right 
-                        {
-                            Some(piece) => {if piece.color == "White" {
-
-                                possible_moves-push(position_converter(row - 1, column + 1));
-                            }},
-                            None => ()
-                        }
+                        is_valid_move_en_passaint(&self, row - 1, column + 1,chosen_piece, possible_moves);
                     }
                     
                     if column > 0
                     {
-                        let piece_on_left: &Option<Piece> = &self.gameboard[row - 1][column - 1];
-
-                        match piece_on_left
-                        {
-                            Some(piece) => {if piece.color == "White" {
-
-                                possible_moves-push(position_converter(row - 1, column - 1));
-                            }},
-                            None => ()
-                        }
+                        is_valid_move_en_passaint(&self, row - 1, column - 1,chosen_piece, possible_moves);
                     }
 
                 }
@@ -137,37 +101,13 @@ impl Game
                     
                     if row >= 2 
                     {
-
-                        let targeted_piece_one: &Option<Piece> = &self.gameboard[row - 2][column - 1];
-
-                        match targeted_piece_one
-                        {
-
-                            Some(piece ) => {if piece.color != chosen_piece.color
-                            {
-                                possible_moves.push(position_converter(row - 2, column - 1));
-                            }}
-
-                            None => possible_moves.push(position_converter(row - 2, column - 1))
-                        }
+                        is_valid_move_knight(&self, row - 2, column - 1, chosen_piece, possible_moves);
                     }
 
                     if row <= 5
                     {
 
-                        let targeted_piece_two: &Option<Piece> = &self.gameboard[row + 2][column - 1];
-
-                        match targeted_piece_two
-                        {
-
-                            Some(piece ) => {if piece.color != chosen_piece.color
-                            {
-                                possible_moves.push(position_converter(row + 2, column - 1));
-                            }}
-
-                            None => possible_moves.push(position_converter(row + 2, column - 1))
-                        }
-
+                        is_valid_move_knight(&self, row + 2, column - 1, chosen_piece, possible_moves);
                     }
 
                 }
@@ -178,38 +118,12 @@ impl Game
                     
                     if row >= 2 
                     {
-
-                        let targeted_piece_three: &Option<Piece> = &self.gameboard[row - 2][column + 1];
-
-                        match targeted_piece_three
-                        {
-
-                            Some(piece ) => {if piece.color != chosen_piece.color
-                            {
-                                possible_moves.push(position_converter(row - 2, column + 1));
-                            }}
-
-                            None => possible_moves.push(position_converter(row - 2, column + 1))
-                        }
-
+                        is_valid_move_knight(&self, row - 2, column + 1, chosen_piece, possible_moves);
                     }
 
                     if row <= 5
                     {
-
-                        let targeted_piece_four: &Option<Piece> = &self.gameboard[row + 2][column + 1];
-
-                        match targeted_piece_four
-                        {
-
-                            Some(piece ) => {if piece.color != chosen_piece.color
-                            {
-                                possible_moves.push(position_converter(row + 2, column + 1));
-                            }}
-
-                            None => possible_moves.push(position_converter(row + 2, column + 1))
-                        }
-
+                        is_valid_move_knight(&self, row + 2, column + 1, chosen_piece, possible_moves);
                     }
 
                 }
@@ -219,36 +133,14 @@ impl Game
                     if row > 1
                     {
 
-                        let targeted_piece_five: &Option<Piece> = &self.gameboard[row - 1][column + 2];
-
-                        match targeted_piece_five
-                        {
-
-                            Some(piece ) => {if piece.color != chosen_piece.color
-                            {
-                                possible_moves.push(position_converter(row - 1, column + 2));
-                            }}
-
-                            None => possible_moves.push(position_converter(row - 1, column + 2))
-                        }
+                        is_valid_move_knight(&self, row - 2, column + 1, chosen_piece, possible_moves);
 
                     }
 
                     if row < 6
                     {
 
-                        let targeted_piece_six: &Option<Piece> = &self.gameboard[row + 1][column + 2];
-
-                        match targeted_piece_six
-                        {
-
-                            Some(piece ) => {if piece.color != chosen_piece.color
-                            {
-                                possible_moves.push(position_converter(row - 1, column + 2));
-                            }}
-
-                            None => possible_moves.push(position_converter(row - 1, column + 2))
-                        }
+                        is_valid_move_knight(&self, row - 1, column + 2, chosen_piece, possible_moves);
 
                     }
                 }
@@ -257,37 +149,13 @@ impl Game
                 {
                     if row > 1
                     {
-
-                        let targeted_piece_seven: &Option<Piece> = &self.gameboard[row - 1][column - 2];
-
-                        match targeted_piece_seven
-                        {
-
-                            Some(piece ) => {if piece.color != chosen_piece.color
-                            {
-                                possible_moves.push(position_converter(row - 1, column - 2));
-                            }}
-
-                            None => possible_moves.push(position_converter(row - 1, column - 2))
-                        }
-
+                        is_valid_move_knight(&self, row - 1, column - 2, chosen_piece, possible_moves);
                     }
 
                     if row < 6
                     {
 
-                        let targeted_piece_eight: &Option<Piece> = &self.gameboard[row + 1][column - 2];
-
-                        match targeted_piece_eight
-                        {
-
-                            Some(piece ) => {if piece.color != chosen_piece.color
-                            {
-                                possible_moves.push(position_converter(row + 1, column - 2));
-                            }}
-
-                            None => possible_moves.push(position_converter(row + 1, column - 2))
-                        }
+                        is_valid_move_knight(&self, row  + 1, column - 2, chosen_piece, possible_moves);
 
                     }
                 }
@@ -309,89 +177,26 @@ impl Game
                         
                         if row + i <= 7 && column + i <= 7 && !is_right_up_done
                         {
-                            let current_targeted_piece: &Option<Piece> = &self.gameboard[row + i][column + i];
-
-                            match current_targeted_piece
-                            {
-                                Some(piece) => {if piece.color != chosen_piece.color
-                                { possible_moves.push(position_converter(row + i, column + i))}
-
-                                else 
-                                {
-                                    possible_moves.push(position_converter(row + i -1, column + i - 1));
-                                    
-                                }
-
-                                is_right_up_done = true; //when there is a piece on the way of bishop it cannot go further. If we do not have this boolean variable the loop might continue to go into this if-block although bishop cannot jumpon pieces.
-                            }
-
-                                None => possible_moves.push(position_converter(row + i, column + i))
-                            }
+                            is_valid_move_bishop(&self, row, column, chosen_piece, possible_moves, is_right_up_done, true, true, i);
                         }
 
                         if row - i >= 0 && column - i >= 0 && !is_left_down_done
                         {
-                            let current_targeted_piece: &Option<Piece> = &self.gameboard[row - i][column - i];
-
-                            match current_targeted_piece
-                            {
-                                Some(piece) => {if piece.color != chosen_piece.color
-                                { possible_moves.push(position_converter(row - i, column - i))}
-
-                                else 
-                                {
-                                    possible_moves.push(position_converter(row - i + 1, column - i + 1));
-                                }
-
-                                is_left_down_done = true;
-                            }
-
-                                None => possible_moves.push(position_converter(row - i, column - i))
-                            }
+                            is_valid_move_bishop(&self, row, column, chosen_piece, possible_moves, is_left_down_done, false, false, i);
                         }
 
                         if row - i >= 0 && column + i <= 7 && !is_left_up_done
                         {
+                            is_valid_move_bishop(&self, row, column, chosen_piece, possible_moves, is_left_up_done, false, true, i);
+                          
                             let current_targeted_piece: &Option<Piece> = &self.gameboard[row - i][column + i];
-
-                            match current_targeted_piece
-                            {
-                                Some(piece) => {if piece.color != chosen_piece.color
-                                { possible_moves.push(position_converter(row - i, column + i))}
-
-                                else 
-                                {
-                                    possible_moves.push(position_converter(row - i + 1, column - i - 1));
-                                }
-
-                                is_left_up_done = true;
-                            }
-
-                                None => possible_moves.push(position_converter(row - i, column + i))
-                                
-                            }
                         }
 
                         if row + i <= 7 && column - i >= 0 && !is_right_down_done
                         {
-                            let current_targeted_piece: &Option<Piece> = &self.gamebıard[row + i][column - i];
+                            is_valid_move_bishop(&self, row, column, chosen_piece, possible_moves, is_right_down_done, true, false, i);
 
-                            match current_targeted_piece
-                            {
-                                Some(piece) => {if piece.color != chosen_piece.color
-                                { possible_moves.push(position_converter(row + i, column - i))}
-
-                                else 
-                                {
-                                    possible_moves.push(position_converter(row + i - 1, column + i + 1));
-                                }
-
-                                is_right_down_done = true;
-                            }
-
-                                None => possible_moves.push(position_converter(row + i, column - i))
-                            }
-                    }
+                        }
 
                     if chosen_piece.what_type == "Rook" || chosen_piece.what_type == "Queen"
                     {
@@ -402,112 +207,37 @@ impl Game
                         for i in 1..8
                         {
                             if column + i <= 7 && !is_right_done
-                            {    
-                                let current_targeted_piece: &Option<Piece> = &self.gameboard[row][column + i];
-
-                                match current_targeted_piece
-                                {
-                                    Some(piece) => { if piece.color != chosen_piece.color
-                                        {
-                                            possible_moves.push(position_converter(row, column + i));
-                                        }
-
-                                        else {
-                                            possible_moves.push(position_converter(row, column + i - 1));
-                                        }
-
-                                        is_right_done = true;
-                                    }
-
-                                    None => possible_moves.push(position_converter(row, column + i))
-                                }
+                            {   
+                                is_valid_move_rook(&self, row, column, chosen_piece, possible_moves, is_right_done, "column", true, i); 
                             } 
 
                             if column - i >= 0 && !is_left_done
                             {
-                                let current_targeted_piece: &Option<Piece> = &self.gameboard[row][column - i];
+                                is_valid_move_rook(&self, row, column, chosen_piece, possible_moves, is_left_done, "column", false, i);
+                            }
 
-                                match current_targeted_piece
-                                {
-                                    Some(piece) => { if piece.color != chosen_piece.color
-                                        {
-                                            possible_moves.push(position_converter(row, column - i));
-                                        }
-
-                                        else {
-                                            possible_moves.push(position_converter(row, column - i + 1));
-                                        }
-
-                                        is_left_done = true;
-                                    }
-
-                                    None => possible_moves.push(position_converter(row, column - i))
-                                }
-
-
-                                if row + i <= 7 && !is_down_done
-                                {
-                                let current_targeted_piece: &Option<Piece> = &self.gameboard[row + i][column];
-
-                                match current_targeted_piece
-                                {
-                                    Some(piece) => { if piece.color != chosen_piece.color
-                                        {
-                                            possible_moves.push(position_converter(row + i, column));
-                                        }
-
-                                        else {
-                                            possible_moves.push(position_converter(row + i - 1, column));
-                                        }
-
-                                        is_down_done = true;
-                                    }
-
-                                    None => possible_moves.push(position_converter(row + i, column))
-                                }
-
-
-                                } 
-
-                                if row - i >= 0 && !is_up_done
+                            if row + i <= 7 && !is_down_done
                             {
-                                let current_targeted_piece: &Option<Piece> = &self.gameboard[row - i][column];
-
-                                match current_targeted_piece
-                                {
-                                    Some(piece) => { if piece.color != chosen_piece.color
-                                        {
-                                            possible_moves.push(position_converter(row - i, column));
-                                        }
-
-                                        else {
-                                            possible_moves.push(position_converter(row - i + 1, column));
-                                        }
-
-                                        is_left_done = true;
-                                    }
-
-                                    None => possible_moves.push(position_converter(row - i, column))
-                                }
-                                
-                            }
+                                is_valid_move_rook(&self, row, column, chosen_piece, possible_moves, is_down_done, "row", true, i); 
                             }
 
-                                }
-                            }
+                            if row - i >= 0 && !is_up_done
+                            {
+                                is_valid_move_rook(&self, row, column, chosen_piece, possible_moves, is_up_done, "row", false, i); 
                             }
 
+                        }
             }
 
             else if chosen_piece.what_type == "King"
             {
                 let mut maximal_range_of_king: Vec<String> = Vec::new();
-                let mut new_gameboard_to_be_scanned = &self.gameboard;
+                let mut new_gameboard_to_be_scanned = &self.gameboard.clone();
 
                 if !chosen_piece.has_moved
                 {
                     let rook1: Option<Piece> = &self.gameboard[row][column + 3];
-                    let rook2: Option<Piece> = &self.gameboard[row][column + 4];
+                    let rook2: Option<Piece> = &self.gameboard[row][column - 4];
 
 
                     if chosen_piece.color == "White"
@@ -518,10 +248,62 @@ impl Game
                             Some(piece) => {if piece.what_type == "Rook" {
                                 if !piece.has_moved
                                 {
-                                    maximal_range_of_king.push()
+                                    if is_empty(&self, "F1") && is_empty(&self, "G1") {
+                                        maximal_range_of_king.push("G1");
+                                    }
                                 }
                             }}
+
+                            None => ()
                         }
+
+                        match rook2
+                        {
+                            Some(piece) => {if piece.what_type == "Rook" {
+                                if !piece.has_moved
+                                {
+                                    if is_empty(&self, "D1") && is_empty(&self, "C1") && is_empty(&self, "B1"){
+                                        maximal_range_of_king.push("C1");
+                                    }
+                                }
+                            }}
+
+                            None => ()
+                        }
+
+                    }
+
+                    else if chosen_piece.color == "Black"
+                    {
+                    
+                        match rook1
+                        {
+                            Some(piece) => {if piece.what_type == "Rook" {
+                                if !piece.has_moved
+                                {
+                                    if is_empty(&self, "F8") && is_empty(&self, "G8") {
+                                        maximal_range_of_king.push("G8");
+                                    }
+                                }
+                            }}
+
+                            None => ()
+                        }
+
+                        match rook2
+                        {
+                            Some(piece) => {if piece.what_type == "Rook" {
+                                if !piece.has_moved
+                                {
+                                    if is_empty(&self, "D8") && is_empty(&self, "C8") && is_empty(&self, "B8"){
+                                        maximal_range_of_king.push("C8");
+                                    }
+                                }
+                            }}
+
+                            None => ()
+                        }
+
                     }
                 }
 
@@ -672,9 +454,9 @@ impl Game
                 }
 
 
-                for every_row in new_gameboard_to_be_scanned
+                for every_row in 1..8
                 {
-                    for every_column in every_row
+                    for every_column in 1..8
                     {
                         if maximal_range_of_king.contains(new_gameboard_to_be_scanned[every_row][every_column])
                         {
@@ -702,6 +484,7 @@ impl Game
 
             
     }
+
 }
 
 
@@ -938,4 +721,152 @@ fn get_opposite_kings_range(&current_game: Game, opposite_king: Piece) -> Vec<St
             
         }
     maximal_range_of_opposite_king
+}
+
+fn is_empty(current_game: &Game, position: String) -> bool
+{   
+    let (row, column) = reverse_position_converter(position);
+    let current_targeted_piece = &current_game.gameboard[row][column];
+
+    match current_targeted_piece {
+        Some(piece) => false,
+        None => true
+    }
+}
+
+fn is_valid_move_en_passaint(current_game: &Game, row: u8, column:u8, main_chosen_piece: &Piece, possible_moves: Vec<String>)
+{   
+    let current_targeted_piece = &current_game.gameboard[row][column];
+
+    match current_targeted_piece {
+        Some(piece) => {if main_chosen_piece.color != current_targeted_piece.color {
+            possible_moves.push(position_converter(row, column));
+        }},
+        None => ()
+    }
+
+}
+
+fn is_valid_move_knight(current_game: &Game, row: u8, column:u8, main_chosen_piece: &Piece, possible_moves: Vec<String>)
+{   
+    let current_targeted_piece = &current_game.gameboard[row][column];
+
+    match current_targeted_piece {
+        Some(piece) => {if main_chosen_piece.color != current_targeted_piece.color {
+            possible_moves.push(position_converter(row, column));
+        }},
+        None => possible_moves.push(position_converter(row, column))
+    }
+
+}
+
+fn is_valid_move_bishop(current_game: &Game, row: u8, column:u8, main_chosen_piece: &Piece, possible_moves: Vec<String>, check_variable: bool, row_constant_positive: bool, column_constant_positive: bool, loop_variable: u8) {
+    
+    if row_constant_positive && column_constant_positive {
+        let target_row = row + loop_variable;
+        let target_column = column + loop_variable;
+        let go_back_constant_row = -1;
+        let go_back_constant_column = -1;
+    }
+
+    else if !row_constant_positive && column_constant_positive {
+        let target_row = row - loop_variable;
+        let target_column = column + loop_variable;
+        let go_back_constant_row = 1;
+        let go_back_constant_column = -1;
+    }
+
+    else if row_constant_positive && !column_constant_positive {
+        let target_row = row + loop_variable;
+        let target_column = column - loop_variable;
+        let go_back_constant_row = -1;
+        let go_back_constant_column = 1;
+    }
+
+    else {
+        let target_row = row - loop_variable;
+        let target_column = column - loop_variable;
+        let go_back_constant_row = 1;
+        let go_back_constant_column = 1;
+    }
+    
+    let current_targeted_piece: &Option<Piece> = &self.gameboard[target_row][target_column];
+
+    match current_targeted_piece
+    {
+        Some(piece) => {if piece.color != chosen_piece.color
+        { possible_moves.push(position_converter(target_row, target_column))}
+
+        else 
+        {
+            possible_moves.push(position_converter(target_row + go_back_constant_row, target_column + go_back_constant_column)); //when there is a piece on the way of bishop it cannot go further. If we do not have this boolean variable the loop might continue to go into this if-block although bishop cannot jumpon pieces.
+        }
+
+        check_variable = true;
+    }
+
+        None => possible_moves.push(position_converter(target_row, target_column))
+    }
+}
+
+fn is_valid_move_rook(current_game: &Game, row: u8, column:u8, main_chosen_piece: &Piece, possible_moves: Vec<String>, check_variable: bool, row_or_column: String, constant_positive: bool, loop_variable: u8) {
+    
+    if row_or_column.unwrap() == "row"
+    {
+        if constant_positive
+        {
+            let target_row = row + loop_variable;
+            let target_column = column;
+            let go_back_constant_row = -1;
+            let go_back_constant_row = 0;
+
+        }
+        
+        else 
+        {
+            let target_row = row - loop_variable;
+            let target_column = column;
+            let go_back_constant_row = 1;
+            let go_back_constant_row = 0; 
+        }
+    }
+
+    else if row_or_column.unwrap() == "column"
+    {
+        if constant_positive
+        {
+            let target_row = row;
+            let target_column = column + loop_variable;
+            let go_back_constant_row = 0;
+            let go_back_constant_row = -1;
+
+        }
+        
+        else 
+        {
+            let target_row = row;
+            let target_column = column - loop_variable; 
+            let go_back_constant_row = 0;
+            let go_back_constant_row = 1;
+
+        }
+    }
+
+    let current_targeted_piece: &Option<Piece> = &self.gameboard[target_row][target_column];
+
+    match current_targeted_piece
+    {
+        Some(piece) => {if piece.color != chosen_piece.color
+        { possible_moves.push(position_converter(target_row, target_column))}
+
+        else 
+        {
+            possible_moves.push(position_converter(target_row + go_back_constant_row, target_column + go_back_constant_column)); //when there is a piece on the way of bishop it cannot go further. If we do not have this boolean variable the loop might continue to go into this if-block although bishop cannot jumpon pieces.
+        }
+
+        check_variable = true;
+    }
+
+        None => possible_moves.push(position_converter(target_row, target_column))
+    }
 }
