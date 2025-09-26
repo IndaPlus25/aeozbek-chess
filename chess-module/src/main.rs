@@ -38,18 +38,32 @@ struct Game
 impl Game 
 {
     pub fn make_move(&mut self, from: String, to: String) -> Option<GameState> {
-        if &self.current_state == InProgress {
+        if &self.current_state == InProgress || Check { // if it is a check the player still has the opportunity to save their king
             
+            let mut is_check_white: bool = false; // this boolean variable is for checking if the kings position is under threat of an enemy piece. If both the position of the king is under threat and the king has nowhere to go it is a checkmate, otherwise if kings position is not under threat it means that it is a stalemate
+            let mut is_check_black: bool = false; // the reason we specify colors of the check variables is to not let the player do another move that does not save the king from the threat
             let valid_moves = &self.get_possible_moves(from);
             let (row, column) = reverse_position_converter(from);
             let (target_row, target_column) = reverse_position_converter(to);
             let which_piece = &self.gameboard[row][column];
 
-            if let Some(chosen_piece) = which_piece && valid_moves.contains(to) { // if the user has really chosen a piece and the piece is able to move to that chosen position it is valid
+            if let Some(chosen_piece) = which_piece && valid_moves.contains(to) && self.whose_turn == which_piece.color  { // if the user has really chosen a piece and the piece is able to move to that chosen position it is valid
 
                 chosen_piece.position = to;
                 &self.gameboard[target_row][target_column] = which_piece.clone();
                 &self.gameboard[row][column] = None;
+                let will_a_pawn_be_removed: Option<String> = is_move_en_passant(&self.gameboard, chosen_piece, to);
+
+                match will_a_pawn_be_removed {
+
+                    Some(pawn_to_be_removed) => { 
+                        let (pawns_row, pawns_column) = pawn_to_be_removed;
+                        &self.gameboard[target_row][target_column] = None;
+                    }
+
+                    None => ()
+                }
+
                 if chosen_piece.what_type == "King" {
                     
                     if chosen_piece.color == "Black" {
@@ -66,18 +80,105 @@ impl Game
                 let white_king_moves: Vec<String> = self.get_possible_moves(&self.white_king_position); // These vectors will be used to check if other opposite pieces block all the way the kings can go to and hence will help us determining if the game is a checkmate, stalemate or something else
                 let black_king_moves: Vec<String> = self.get_possible_moves(&self.black_king_position);
 
+                
+
                 for every_row in 1..8 {
 
                     for every_column in 1..8 {
 
                         let chosen_piece = &self.gameboard[every_row][every_column];
 
-                        if chosen_piece.color
+                        if self.whose_turn == "White" && chosen_piece.color == "Black" {
+
+                            let possible_moves_of_the_enemy = self.get_possible_moves(position_converter(every_row, every_column));
+                            if possible_moves_of_the_enemy.contains(self.white_king_position) {
+
+                                is_check_white = true;
+                            }
+
+                        else if self.whose_turn == "Black" && chosen_piece.color == "White" {
+
+                            let possible_moves_of_the_enemy = self.get_possible_moves(position_converter(every_row, every_column));
+                            if possible_moves_of_the_enemy.contains(self.white_king_position) {
+
+                                is_check_black = true;
+                            }
+
+                        }
+
+                        if self.whose_turn== "White" && is_check_white == true { // if the player's king is under threat it shall be invalid
+
+                            break
+                        }
+
+                        else if self.whose_turn == "Black" && is_check_black {
+
+                            break
+                        }
 
                     }
                 }
-        
 
+                if self.whose_turn == "White" {
+
+                    if is_check_white {
+
+                        None
+                    }
+
+                    if is_check_black && black_king_moves.len() == 0 {
+
+                        &self.current_state = &GameState::Checkmate;
+                    }
+
+                    else if is_check_black && black_king_moves.len() > 0 {
+
+                        &self.current_state = &GameState::Check;
+                    }
+
+                    else if !is_check_black && black_king_moves.len() == 0 {
+
+                        &self.current_state = &GameState::InProgress;
+                    }
+
+                    else {
+
+                        &self.current_state = &GameState::InProgress;
+                    }
+
+                    &self.whose_turn = "Black";
+                    &self.current_state
+                }
+
+                if self.whose_turn == "Black" {
+
+                    if is_check_black {
+
+                        None
+                    }
+
+                    if is_check_white && white_king_moves.len() == 0 {
+
+                        &self.current_state = &GameState::Checkmate;
+                    }
+
+                    else if is_check_white && white_king_moves.len() > 0 {
+
+                        &self.current_state = &GameState::Check;
+                    }
+
+                    else if !is_check_white && white_king_moves.len() == 0 {
+
+                        &self.current_state = &GameState::InProgress;
+                    }
+
+                    else {
+
+                        &self.current_state = &GameState::InProgress;
+                    }
+                    &self.whose_turn = "White";
+                    &self.current_state
+                }
             }
             
         } 
@@ -574,392 +675,284 @@ fn is_valid_move_king(gameboard: &[[Option<Piece>; 8]; 8], row: u8, column:u8, m
         }
     }
 }
-
-fn get_maximal_range(gameboard: [[Option<Piece>; 8]; 8], position: String) -> Option<Vec<String>>
-{
+fn get_maximal_range(gameboard: [[Option<Piece>; 8]; 8], position: String) -> Option<Vec<String>> {
     let possible_moves: Vec<String> = Vec::new();
     let (row, column): (u8, u8) = reverse_position_converter(position);
     let which_piece: &Option<Piece> = gameboard[row][column];
 
-    if let Some(chosen_piece) = which_piece
-    {
-        if chosen_piece.what_type == "Pawn" 
-        {
-
-            if chosen_piece.color == "Black" && row < 7
-            {
-                
+    if let Some(chosen_piece) = which_piece {
+        if chosen_piece.what_type == "Pawn" {
+            if chosen_piece.color == "Black" && row < 7 {
                 let piece_at_front: &Option<Piece> = gameboard[row + 1][column];
 
-                match piece_at_front
-                {
+                match piece_at_front {
                     Some(_) => (),
-                    None => possible_moves.push(position_converter(row + 1, column))
+                    None => possible_moves.push(position_converter(row + 1, column)),
                 }
 
-                if column < 7
-                {
+                if column < 7 {
                     is_valid_move_pawn(gameboard, row + 1, column + 1, chosen_piece, possible_moves);
                 }
-                
-                if column > 0
-                {
-                    is_valid_move_pawn(gameboard, row + 1, column -1, chosen_piece, possible_moves);
+
+                if column > 0 {
+                    is_valid_move_pawn(gameboard, row + 1, column - 1, chosen_piece, possible_moves);
                 }
 
                 if row == 1 {
-                    let piece_at_double_front: &Option<Piece> = gameboard.gameboard[row + 2][column]; // if the pawn hasn't moved yet and the square after two rows is empty it can move there too
+                    let piece_at_double_front: &Option<Piece> = &self.gameboard[row + 2][column];
                     match piece_at_double_front {
                         Some(_) => (),
-                        None => possible_moves.push(position_converter(row + 2, column))
+                        None => possible_moves.push(position_converter(row + 2, column)),
                     }
                 }
 
                 if row == 4 {
-
                     is_valid_en_passant(gameboard, row, column, chosen_piece, &mut possible_moves);
                 }
-            }
+            } else if chosen_piece.color == "White" && row > 0 {
+                let piece_at_front: &Option<Piece> = &self.gameboard[row - 1][column];
 
-            else if (chosen_piece.color == "White" && row > 0)
-            {
-
-                let piece_at_front: &Option<Piece> = gameboard.gameboard[row - 1][column];
-
-                match piece_at_front
-                {
+                match piece_at_front {
                     Some(_) => (),
-                    None => possible_moves.push(position_converter(row - 1, column))
+                    None => possible_moves.push(position_converter(row - 1, column)),
                 }
 
-                if column > 0
-                {
-                    is_valid_move_pawn(gameboard, row - 1, column + 1,chosen_piece, possible_moves);
+                if column > 0 {
+                    is_valid_move_pawn(gameboard, row - 1, column + 1, chosen_piece, possible_moves);
                 }
-                
-                if column > 0
-                {
-                    is_valid_move_pawn(gameboard, row - 1, column - 1,chosen_piece, possible_moves);
+
+                if column > 0 {
+                    is_valid_move_pawn(gameboard, row - 1, column - 1, chosen_piece, possible_moves);
                 }
 
                 if row == 6 {
-
-                    let piece_at_doube_front: &Option<Piece> = gameboard[row - 2][column]; 
+                    let piece_at_doube_front: &Option<Piece> = gameboard[row - 2][column];
                     match piece_at_doube_front {
                         Some(_) => (),
-                        None => {
-                            possible_moves.push(position_converter(row - 2, column))
-                        }
+                        None => possible_moves.push(position_converter(row - 2, column)),
                     }
-
                 }
 
                 if row == 3 {
-
                     is_valid_en_passant(gameboard, row, column, chosen_piece, &mut possible_moves);
                 }
-
-        }
-
-        else if chosen_piece.what_type == "Knight"
-        {
-            if column > 0 
-            {
-                
-                if row >= 2 
-                {
+            }
+        } else if chosen_piece.what_type == "Knight" {
+            if column > 0 {
+                if row >= 2 {
                     is_valid_move_knight(gameboard, row - 2, column - 1, chosen_piece, possible_moves);
                 }
 
-                if row <= 5
-                {
-
+                if row <= 5 {
                     is_valid_move_knight(gameboard, row + 2, column - 1, chosen_piece, possible_moves);
                 }
-
             }
 
-            
-            if column < 7
-            {
-                
-                if row >= 2 
-                {
+            if column < 7 {
+                if row >= 2 {
                     is_valid_move_knight(gameboard, row - 2, column + 1, chosen_piece, possible_moves);
                 }
 
-                if row <= 5
-                {
+                if row <= 5 {
                     is_valid_move_knight(gameboard, row + 2, column + 1, chosen_piece, possible_moves);
                 }
-
             }
 
-            if column <= 5
-            {
-                if row > 1
-                {
-
+            if column <= 5 {
+                if row > 1 {
                     is_valid_move_knight(gameboard, row - 2, column + 1, chosen_piece, possible_moves);
-
                 }
 
-                if row < 6
-                {
-
+                if row < 6 {
                     is_valid_move_knight(gameboard, row - 1, column + 2, chosen_piece, possible_moves);
-
                 }
             }
 
-            if column >= 2
-            {
-                if row > 1
-                {
+            if column >= 2 {
+                if row > 1 {
                     is_valid_move_knight(gameboard, row - 1, column - 2, chosen_piece, possible_moves);
                 }
 
-                if row < 6
-                {
-
-                    is_valid_move_knight(gameboard, row  + 1, column - 2, chosen_piece, possible_moves);
-
+                if row < 6 {
+                    is_valid_move_knight(gameboard, row + 1, column - 2, chosen_piece, possible_moves);
                 }
             }
-            }
-        }
-
-        else if chosen_piece.what_type == "Bishop" || chosen_piece.what_type == "Rook" || chosen_piece.what_type == "Queen"
-        {
-
-            if chosen_piece.what_type == "Bishop" || chosen_piece.what_type == "Queen"
-            {
+        } else if chosen_piece.what_type == "Bishop" || chosen_piece.what_type == "Rook" || chosen_piece.what_type == "Queen" {
+            if chosen_piece.what_type == "Bishop" || chosen_piece.what_type == "Queen" {
                 let mut is_right_up_done = false;
                 let mut is_left_up_done = false;
                 let mut is_left_down_done = false;
                 let mut is_right_down_done = false;
 
-                for i in 1..8
-                {
-                    
-                    if row + i <= 7 && column + i <= 7 && !is_right_up_done
-                    {
+                for i in 1..8 {
+                    if row + i <= 7 && column + i <= 7 && !is_right_up_done {
                         is_valid_move_bishop(gameboard, row, column, chosen_piece, &mut possible_moves, &mut is_right_up_done, true, true, &i);
                     }
 
-                    if row - i >= 0 && column - i >= 0 && !is_left_down_done
-                    {
+                    if row - i >= 0 && column - i >= 0 && !is_left_down_done {
                         is_valid_move_bishop(gameboard, row, column, chosen_piece, &mut possible_moves, &mut is_left_down_done, false, false, &i);
                     }
 
-                    if row - i >= 0 && column + i <= 7 && !is_left_up_done
-                    {
+                    if row - i >= 0 && column + i <= 7 && !is_left_up_done {
                         is_valid_move_bishop(gameboard, row, column, chosen_piece, &mut possible_moves, &mut is_left_up_done, false, true, &i);
-                        
-                        let current_targeted_piece: &Option<Piece> = gameboard.gameboard[row - i][column + i];
+
+                        let current_targeted_piece: &Option<Piece> = &self.gameboard[row - i][column + i];
                     }
 
-                    if row + i <= 7 && column - i >= 0 && !is_right_down_done
-                    {
+                    if row + i <= 7 && column - i >= 0 && !is_right_down_done {
                         is_valid_move_bishop(gameboard, row, column, chosen_piece, &mut possible_moves, &mut is_right_down_done, true, false, &i);
+                    }
+                }
+            }
 
+            if chosen_piece.what_type == "Rook" || chosen_piece.what_type == "Queen" {
+                let mut is_right_done: bool = false;
+                let mut is_left_done: bool = false;
+                let mut is_up_done: bool = false;
+                let mut is_down_done: bool = false;
+
+                for i in 1..8 {
+                    if column + i <= 7 && !is_right_done {
+                        is_valid_move_rook(gameboard, row, column, chosen_piece, &mut possible_moves, &mut is_right_done, "column", true, &i);
                     }
 
-                if chosen_piece.what_type == "Rook" || chosen_piece.what_type == "Queen"
-                {
-                    let mut is_right_done: bool = false;
-                    let mut is_left_done: bool = false;
-                    let mut is_up_done: bool = false;
-                    let mut is_down_done: bool = false;
-                    for i in 1..8
-                    {
-                        if column + i <= 7 && !is_right_done
-                        {   
-                            is_valid_move_rook(gameboard, row, column, chosen_piece, &mut possible_moves, &mut is_right_done, "column", true, &i); 
-                        } 
-
-                        if column - i >= 0 && !is_left_done
-                        {
-                            is_valid_move_rook(gameboard, row, column, chosen_piece, &mut possible_moves, &mut is_left_done, "column", false, &i);
-                        }
-
-                        if row + i <= 7 && !is_down_done
-                        {
-                            is_valid_move_rook(gameboard, row, column, chosen_piece, &mut possible_moves, &mut is_down_done, "row", true, &i); 
-                        }
-
-                        if row - i >= 0 && !is_up_done
-                        {
-                            is_valid_move_rook(gameboard, row, column, chosen_piece, &mut possible_moves, &mut is_up_done, "row", false, &i); 
-                        }
-
+                    if column - i >= 0 && !is_left_done {
+                        is_valid_move_rook(gameboard, row, column, chosen_piece, &mut possible_moves, &mut is_left_done, "column", false, &i);
                     }
-        } 
 
-        else if chosen_piece.what_type == "King"
-        {
+                    if row + i <= 7 && !is_down_done {
+                        is_valid_move_rook(gameboard, row, column, chosen_piece, &mut possible_moves, &mut is_down_done, "row", true, &i);
+                    }
+
+                    if row - i >= 0 && !is_up_done {
+                        is_valid_move_rook(gameboard, row, column, chosen_piece, &mut possible_moves, &mut is_up_done, "row", false, &i);
+                    }
+                }
+            }
+        }
+
+        if chosen_piece.what_type == "King" {
             let mut maximal_range_of_king: Vec<String> = Vec::new();
-            let mut new_gameboard_to_be_scanned = gameboard.clone(); // The reason we clone the current gameboard is that if the king were to take a piece which is in range of another opposite team's piece the move is forbidden. So, in the new gameboard we can change color of the pieces that are in the range of the king and see if opposite team's another piece have that in their possible moves list 
+            let mut new_gameboard_to_be_scanned = gameboard.clone();
 
-            if !chosen_piece.has_moved // if the king has moved before it cannot have castling
-            {
-                let rook1: Option<Piece> = gameboard[row][column + 3]; // Checking both sides for castling
+            if !chosen_piece.has_moved {
+                let rook1: Option<Piece> = gameboard[row][column + 3];
                 let rook2: Option<Piece> = gameboard[row][column - 4];
 
-
-                if chosen_piece.color == "White"
-                {
-                
-                    match rook1
-                    {
-                        Some(piece) => {if piece.what_type == "Rook" {
-                            if !piece.has_moved
-                            {
-                                if is_empty(gameboard, "F1") && is_empty(&self, "G1") { // if the squares between the castle and the king are empty it can have castling
-                                    maximal_range_of_king.push("G1");
+                if chosen_piece.color == "White" {
+                    match rook1 {
+                        Some(piece) => {
+                            if piece.what_type == "Rook" {
+                                if !piece.has_moved {
+                                    if is_empty(gameboard, "F1") && is_empty(&self, "G1") {
+                                        maximal_range_of_king.push("G1");
+                                    }
                                 }
                             }
-                        }}
-
-                        None => ()
+                        }
+                        None => (),
                     }
 
-                    match rook2
-                    {
-                        Some(piece) => {if piece.what_type == "Rook" {
-                            if !piece.has_moved
-                            {
-                                if is_empty(gameboard, "D1") && is_empty(gameboard, "C1") && is_empty(gameboard, "B1"){
-                                    maximal_range_of_king.push("C1");
+                    match rook2 {
+                        Some(piece) => {
+                            if piece.what_type == "Rook" {
+                                if !piece.has_moved {
+                                    if is_empty(gameboard, "D1") && is_empty(gameboard, "C1") && is_empty(gameboard, "B1") {
+                                        maximal_range_of_king.push("C1");
+                                    }
                                 }
                             }
-                        }}
-
-                        None => ()
+                        }
+                        None => (),
                     }
-
-                }
-
-                else if chosen_piece.color == "Black"
-                {
-                
-                    match rook1
-                    {
-                        Some(piece) => {if piece.what_type == "Rook" {
-                            if !piece.has_moved
-                            {
-                                if is_empty(gameboard, "F8") && is_empty(gameboard, "G8") {
-                                    maximal_range_of_king.push("G8");
+                } else if chosen_piece.color == "Black" {
+                    match rook1 {
+                        Some(piece) => {
+                            if piece.what_type == "Rook" {
+                                if !piece.has_moved {
+                                    if is_empty(gameboard, "F8") && is_empty(gameboard, "G8") {
+                                        maximal_range_of_king.push("G8");
+                                    }
                                 }
                             }
-                        }}
-
-                        None => ()
+                        }
+                        None => (),
                     }
 
-                    match rook2
-                    {
-                        Some(piece) => {if piece.what_type == "Rook" {
-                            if !piece.has_moved
-                            {
-                                if is_empty(gameboard, "D8") && is_empty(gameboard, "C8") && is_empty(gameboard, "B8"){
-                                    maximal_range_of_king.push("C8");
+                    match rook2 {
+                        Some(piece) => {
+                            if piece.what_type == "Rook" {
+                                if !piece.has_moved {
+                                    if is_empty(gameboard, "D8") && is_empty(gameboard, "C8") && is_empty(gameboard, "B8") {
+                                        maximal_range_of_king.push("C8");
+                                    }
                                 }
                             }
-                        }}
-
-                        None => ()
+                        }
+                        None => (),
                     }
-
                 }
             }
 
-            if row > 0
-            {   
+            if row > 0 {
                 is_valid_move_king(gameboard, row - 1, column, chosen_piece, maximal_range_of_king, new_gameboard_to_be_scanned);
-                
-                if column > 0
-                {
-                    is_valid_move_king(gameboard, row - 1, column - 1, chosen_piece, maximal_range_of_king, new_gameboard_to_be_scanned);    
+
+                if column > 0 {
+                    is_valid_move_king(gameboard, row - 1, column - 1, chosen_piece, maximal_range_of_king, new_gameboard_to_be_scanned);
                 }
 
-                if column < 7
-                {
+                if column < 7 {
                     is_valid_move_king(gameboard, row - 1, column + 1, chosen_piece, maximal_range_of_king, new_gameboard_to_be_scanned);
-
+                }
             }
 
-            if row < 7
-            {   
+            if row < 7 {
                 is_valid_move_king(gameboard, row + 1, column, chosen_piece, maximal_range_of_king, new_gameboard_to_be_scanned);
-                    
-                if column > 0
-                {
-                    is_valid_move_king(gameboard, row + 1, column - 1, chosen_piece, maximal_range_of_king, new_gameboard_to_be_scanned);    
+
+                if column > 0 {
+                    is_valid_move_king(gameboard, row + 1, column - 1, chosen_piece, maximal_range_of_king, new_gameboard_to_be_scanned);
                 }
 
-                if column < 7
-                {
-                    is_valid_move_king(gameboard, row + 1, column + 1, chosen_piece, maximal_range_of_king, new_gameboard_to_be_scanned); 
+                if column < 7 {
+                    is_valid_move_king(gameboard, row + 1, column + 1, chosen_piece, maximal_range_of_king, new_gameboard_to_be_scanned);
                 }
-
             }
 
-            if column > 0
-                {
-                    is_valid_move_king(gameboard, row, column - 1, chosen_piece, maximal_range_of_king, new_gameboard_to_be_scanned);   
-                }
-            
-            if column < 7
-                {
-                    is_valid_move_king(gameboard, row, column + 1, chosen_piece, maximal_range_of_king, new_gameboard_to_be_scanned);
-                    
-                }
+            if column > 0 {
+                is_valid_move_king(gameboard, row, column - 1, chosen_piece, maximal_range_of_king, new_gameboard_to_be_scanned);
+            }
 
+            if column < 7 {
+                is_valid_move_king(gameboard, row, column + 1, chosen_piece, maximal_range_of_king, new_gameboard_to_be_scanned);
             }
 
             let maximal_range_of_opposite_king = get_opposite_kings_range(gameboard, find_opposite_king(gameboard, &chosen_piece));
 
-            for moves in maximal_range_of_opposite_king
-            {
-                if maximal_range_of_king.contains(moves)
-                {
+            for moves in maximal_range_of_opposite_king {
+                if maximal_range_of_king.contains(moves) {
                     if let Some(index) = maximal_range_of_king.iter().position(|&x| x == moves) {
                         maximal_range_of_king.remove(index);
                     }
                 }
             }
 
-
-            for every_row in 1..8
-            {
-                for every_column in 1..8
-                {
-                    if maximal_range_of_king.contains(new_gameboard_to_be_scanned[every_row][every_column])
-                    {
-                        if let Some(index) = maximal_range_of_king.iter().position(|moves| moves == new_gameboard_to_be_scanned[every_row][every_column])
-                        {
+            for every_row in 1..8 {
+                for every_column in 1..8 {
+                    if maximal_range_of_king.contains(new_gameboard_to_be_scanned[every_row][every_column]) {
+                        if let Some(index) = maximal_range_of_king.iter().position(|moves| moves == new_gameboard_to_be_scanned[every_row][every_column]) {
                             maximal_range_of_king.remove(index);
                         }
                     }
-                        
                 }
-                
             }
 
-            for every_move in maximal_range_of_opposite_king
-            {
+            for every_move in maximal_range_of_opposite_king {
                 possible_moves.push(every_move)
             }
-                        
+
             possible_moves
         }
-
-                None // If the chosen block corresponds to an empty block it will return None
-                    
-                }
-
-            }
-        }
     }
-}
+
+    None
+}}
