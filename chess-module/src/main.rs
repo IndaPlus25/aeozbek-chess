@@ -37,6 +37,10 @@ struct Game
 
 impl Game 
 {
+    pub fn get_game_state(&self) -> GameState {
+        &self.current_state
+    }
+
     pub fn make_move(&mut self, from: String, to: String) -> Option<GameState> {
         if &self.current_state == InProgress || Check { // if it is a check the player still has the opportunity to save their king
             
