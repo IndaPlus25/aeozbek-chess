@@ -36,6 +36,7 @@ struct Game
     promotion_type: String // What I understood from instructions is that we will just decide one type that the pawns will promote to and every single pawn will promote to that? Because we do not choose any specific pawn in the set_promotion function so that is how I chose to implement. 
 }
 
+
 impl Game 
 {
     pub fn set_promotion(&mut self, piece: String) -> () {
