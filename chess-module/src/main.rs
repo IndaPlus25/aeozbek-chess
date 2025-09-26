@@ -32,11 +32,22 @@ struct Game
     current_state: GameState,
     white_king_position: String, // The gamestate is almost completely determined by if the kings are target of another opposite piece or not. In order to increase effectivity we can store the positions of the kings so that we do not have to go through the whole gameboard once again
     black_king_position: String,
-    whose_turn: String
+    whose_turn: String,
+    promotion_type: String // What I understood from instructions is that we will just decide one type that the pawns will promote to and every single pawn will promote to that? Because we do not choose any specific pawn in the set_promotion function so that is how I chose to implement. 
 }
 
 impl Game 
 {
+    pub fn set_promotion(&mut self, piece: String) -> () {
+
+        match piece {
+            "Rook" => &self.promotion_type = "Rook",
+            "Bishop" => &self.promotion_type = "Bishop",
+            "Knight" => &self.promotion_type = "Knight",
+            "Queen" => &self-promotion_type = "Queen",
+            _ => ()
+        } 
+    }
     pub fn get_game_state(&self) -> GameState {
         &self.current_state
     }
@@ -46,145 +57,153 @@ impl Game
             
             let mut is_check_white: bool = false; // this boolean variable is for checking if the kings position is under threat of an enemy piece. If both the position of the king is under threat and the king has nowhere to go it is a checkmate, otherwise if kings position is not under threat it means that it is a stalemate
             let mut is_check_black: bool = false; // the reason we specify colors of the check variables is to not let the player do another move that does not save the king from the threat
-            let valid_moves = &self.get_possible_moves(from);
-            let (row, column) = reverse_position_converter(from);
+            let valid_moves = &self.get_possible_moves(from); // we shall get the valid moves of the wished piece so that we know where it is able to go
+            let (row, column) = reverse_position_converter(from); 
             let (target_row, target_column) = reverse_position_converter(to);
-            let which_piece = &self.gameboard[row][column];
+            let which_piece = self.gameboard[row][column];
 
-            if let Some(chosen_piece) = which_piece && valid_moves.contains(to) && self.whose_turn == which_piece.color  { // if the user has really chosen a piece and the piece is able to move to that chosen position it is valid
+            if let Some(chosen_piece) = which_piece {
 
-                chosen_piece.position = to;
-                &self.gameboard[target_row][target_column] = which_piece.clone();
-                &self.gameboard[row][column] = None;
-                let will_a_pawn_be_removed: Option<String> = is_move_en_passant(&self.gameboard, chosen_piece, to);
+                if valid_moves.contains(to) && self.whose_turn == which_piece.color  { // if the user has really chosen a piece and the piece is able to move to that chosen position it is valid
 
-                match will_a_pawn_be_removed {
+                    chosen_piece.position = to;
+                    self.gameboard[target_row][target_column] = Some(chosen_piece.clone());
+                    self.gameboard[row][column] = None;
+                    let will_a_pawn_be_removed: Option<String> = is_move_en_passant(&self.gameboard, chosen_piece, to);
+                    if chosen_piece.what_type == "Pawn" {
 
-                    Some(pawn_to_be_removed) => { 
-                        let (pawns_row, pawns_column) = pawn_to_be_removed;
-                        &self.gameboard[target_row][target_column] = None;
+                        match will_a_pawn_be_removed {
+
+                            Some(pawn_to_be_removed) => { 
+                                let (pawns_row, pawns_column) = pawn_to_be_removed;
+                                self.gameboard[pawns_row][pawns_column] = None;
+                            }
+
+                            None => ()
+                        }
+
+                        if target_row == 7 && self.whose_turn == "White" {
+
+                            self.gameboard[target_row][target_column].what_type = self.promotion_type;
+                        }
+
+                        else if target_row == 0 && self.whose_turn == "Black" {
+                            self.gameboard[target_row][target_column].what_type = self.promotion_type;
+                        }
                     }
 
-                    None => ()
-                }
+                    let white_king_moves: Vec<String> = self.get_possible_moves(self.white_king_position); // These vectors will be used to check if other opposite pieces block all the way the kings can go to and hence will help us determining if the game is a checkmate, stalemate or something else
+                    let black_king_moves: Vec<String> = self.get_possible_moves(self.black_king_position);
 
-                if chosen_piece.what_type == "King" {
                     
-                    if chosen_piece.color == "Black" {
+                    for every_row in 1..8 {
 
-                        &self.black_king_position = to
-                    }
+                        for every_column in 1..8 {
 
-                    else {
+                            let chosen_piece = self.gameboard[every_row][every_column];
 
-                        &self.white_king_position = to
-                    }
-                }
+                            if self.whose_turn == "White" && chosen_piece.color == "Black" {
 
-                let white_king_moves: Vec<String> = self.get_possible_moves(&self.white_king_position); // These vectors will be used to check if other opposite pieces block all the way the kings can go to and hence will help us determining if the game is a checkmate, stalemate or something else
-                let black_king_moves: Vec<String> = self.get_possible_moves(&self.black_king_position);
+                                let possible_moves_of_the_enemy = self.get_possible_moves(position_converter(every_row, every_column));
+                                if possible_moves_of_the_enemy.contains(self.white_king_position) {
 
-                
+                                    is_check_white = true;
+                                }
 
-                for every_row in 1..8 {
+                            else if self.whose_turn == "Black" && chosen_piece.color == "White" {
 
-                    for every_column in 1..8 {
+                                let possible_moves_of_the_enemy = self.get_possible_moves(position_converter(every_row, every_column));
+                                if possible_moves_of_the_enemy.contains(self.white_king_position) {
 
-                        let chosen_piece = &self.gameboard[every_row][every_column];
+                                    is_check_black = true;
+                                }
 
-                        if self.whose_turn == "White" && chosen_piece.color == "Black" {
-
-                            let possible_moves_of_the_enemy = self.get_possible_moves(position_converter(every_row, every_column));
-                            if possible_moves_of_the_enemy.contains(self.white_king_position) {
-
-                                is_check_white = true;
                             }
 
-                        else if self.whose_turn == "Black" && chosen_piece.color == "White" {
+                            if self.whose_turn== "White" && is_check_white == true { // if the player's king is under threat it shall be invalid
 
-                            let possible_moves_of_the_enemy = self.get_possible_moves(position_converter(every_row, every_column));
-                            if possible_moves_of_the_enemy.contains(self.white_king_position) {
+                                None
+                            }
 
-                                is_check_black = true;
+                            else if self.whose_turn == "Black" && is_check_black {
+
+                                None
                             }
 
                         }
+                    }
 
-                        if self.whose_turn== "White" && is_check_white == true { // if the player's king is under threat it shall be invalid
+                    if self.whose_turn == "White" {
 
-                            break
+                        if is_check_white {
+
+                            None
                         }
 
-                        else if self.whose_turn == "Black" && is_check_black {
-
-                            break
+                        if chosen_piece.what_type == "King" {
+                            self.white_king_position = to;
                         }
 
+                        if is_check_black && black_king_moves.len() == 0 {
+
+                            self.current_state = &GameState::Checkmate;
+                        }
+
+                        else if is_check_black && black_king_moves.len() > 0 {
+
+                            self.current_state = &GameState::Check;
+                        }
+
+                        else if !is_check_black && black_king_moves.len() == 0 {
+
+                            self.current_state = &GameState::InProgress;
+                        }
+
+                        else {
+
+                            self.current_state = &GameState::InProgress;
+                        }
+
+                        self.whose_turn = "Black";
+                        self.current_state
+                    }
+
+                    if self.whose_turn == "Black" {
+
+                        if is_check_black {
+
+                            None
+                        }
+
+                        if chosen_piece.what_type == "King" {
+                            self.black_king_position = to;
+                        }
+
+                        if is_check_white && white_king_moves.len() == 0 {
+
+                            self.current_state = &GameState::Checkmate;
+                        }
+
+                        else if is_check_white && white_king_moves.len() > 0 {
+
+                            self.current_state = &GameState::Check;
+                        }
+
+                        else if !is_check_white && white_king_moves.len() == 0 {
+
+                            self.current_state = &GameState::InProgress;
+                        }
+
+                        else {
+
+                            self.current_state = &GameState::InProgress;
+                        }
+                        self.whose_turn = "White";
+                        self.current_state
                     }
                 }
 
-                if self.whose_turn == "White" {
-
-                    if is_check_white {
-
-                        None
-                    }
-
-                    if is_check_black && black_king_moves.len() == 0 {
-
-                        &self.current_state = &GameState::Checkmate;
-                    }
-
-                    else if is_check_black && black_king_moves.len() > 0 {
-
-                        &self.current_state = &GameState::Check;
-                    }
-
-                    else if !is_check_black && black_king_moves.len() == 0 {
-
-                        &self.current_state = &GameState::InProgress;
-                    }
-
-                    else {
-
-                        &self.current_state = &GameState::InProgress;
-                    }
-
-                    &self.whose_turn = "Black";
-                    &self.current_state
-                }
-
-                if self.whose_turn == "Black" {
-
-                    if is_check_black {
-
-                        None
-                    }
-
-                    if is_check_white && white_king_moves.len() == 0 {
-
-                        &self.current_state = &GameState::Checkmate;
-                    }
-
-                    else if is_check_white && white_king_moves.len() > 0 {
-
-                        &self.current_state = &GameState::Check;
-                    }
-
-                    else if !is_check_white && white_king_moves.len() == 0 {
-
-                        &self.current_state = &GameState::InProgress;
-                    }
-
-                    else {
-
-                        &self.current_state = &GameState::InProgress;
-                    }
-                    &self.whose_turn = "White";
-                    &self.current_state
-                }
             }
-            
         } 
     }
  
@@ -317,7 +336,7 @@ pub fn new() -> Game {
         }
     }
     
-    let new_gameboard: Game = Game { gameboard: chessboard, current_state: InProgress, white_king_position: "E1", black_king_position: "E8", whose_turn: "White"  };
+    let new_gameboard: Game = Game { gameboard: chessboard, current_state: InProgress, white_king_position: "E1", black_king_position: "E8", whose_turn: "White", promotion_type: ""  };
     new_gameboard
                 
 }
