@@ -42,11 +42,13 @@ impl Game
             
             let valid_moves = &self.get_possible_moves(from);
             let (row, column) = reverse_position_converter(from);
+            let (target_row, target_column) = reverse_position_converter(to);
             let which_piece = &self.gameboard[row][column];
 
             if let Some(chosen_piece) = which_piece && valid_moves.contains(to) { // if the user has really chosen a piece and the piece is able to move to that chosen position it is valid
 
                 chosen_piece.position = to;
+                &self.gameboard[target_row][target_column] = which_piece.clone();
                 &self.gameboard[row][column] = None;
                 if chosen_piece.what_type == "King" {
                     
