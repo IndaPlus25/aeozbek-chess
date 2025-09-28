@@ -1,2 +1,18 @@
 # aeozbek-chess
-Could not finish on time. I was so focused in implementing all details which resulted with that I did not pay enough attention to potenital errors. I thought to implement tests when I would be done with the module itself. So the only thing I have is the main.rs file that have the code which does not work yet but is at least reasonable. I know why many errors were caused and could have fix them but as told I don't have enough time and my battery is about to die. I understand if it is not even komplettering but I think at least the module's logic I tried to set is worth looking at.
+Done subassignments
+
+All listed functions have been written, with even getters on whose turn it is, number of rounds so far and the game state.
+
+Required features
+
+Complete move sets for all pieces 
+Turn indicator (whose turn it is)
+Promotion
+Castling
+
+Non implemented parts (or tried to be implemented but failed):
+
+Check
+En passant
+Checkmate
+Stalemate

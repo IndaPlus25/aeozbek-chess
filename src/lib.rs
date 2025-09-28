@@ -136,8 +136,12 @@ impl Game
             let [target_row, target_column] = reverse_position_converter(&to);
             let which_piece = self.gameboard[row as usize][column as usize].clone();
             let mut is_there_any_other_move = false;
-            let mut white_king_moves: Vec<String> = self.get_possible_moves(&self.white_king_position).unwrap(); // These vectors will be used to check if other opposite pieces block all the way the kings can go to and hence will help us determining if the game is a checkmate, stalemate or something else
+            let old_turn = self.whose_turn.clone();
+            self.whose_turn = "White".to_string();
+            let mut white_king_moves: Vec<String> = self.get_possible_moves(&self.white_king_position).unwrap();
+            self.whose_turn = "Black".to_string(); // These vectors will be used to check if other opposite pieces block all the way the kings can go to and hence will help us determining if the game is a checkmate, stalemate or something else
             let mut black_king_moves: Vec<String> = self.get_possible_moves(&self.black_king_position).unwrap();
+            self.whose_turn = old_turn;
 
             if let Some(mut chosen_piece) = which_piece {
 
@@ -244,7 +248,7 @@ impl Game
 
                                     }
 
-                                    if self.whose_turn !=  chosen_piece.clone().color  && chosen_piece.what_type != "King".to_string() && !is_there_any_other_move {
+                                    if self.whose_turn == chosen_piece.clone().color  && chosen_piece.what_type != "King".to_string() && !is_there_any_other_move {
                                         let possible_friendly_moves = self.get_possible_moves(&position_converter(every_row, every_column)).unwrap();
                                         if possible_friendly_moves.len() > 0 {
                                             is_there_any_other_move = true;
