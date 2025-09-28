@@ -1,6 +1,9 @@
 [package]
-name = "chess-module"
+name = "aeozbek-chess"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+
+[lib]
+path = "src/lib.rs"
